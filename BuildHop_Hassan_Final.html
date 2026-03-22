@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BuildHop — Daily Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F0F0F;--paper:#FAFAF8;--card:#FFFFFF;--line:#EBEBEA;
+  --muted:#9A9896;--gold:#F5C842;--gold-d:#C9A000;--gold-l:#FFFBDC;
+  --green:#1A6B3C;--green-l:#E6F5ED;
+  --red:#B91C1C;--red-l:#FEF2F2;
+  --blue:#1D4ED8;--blue-l:#EFF6FF;
+  --r8:8px;--r12:12px;--r16:16px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;padding-bottom:50px}
+/* TOP BAR */
+.topbar{background:var(--ink);padding:15px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.tb-brand{display:flex;align-items:center;gap:9px}
+.tb-logo{width:30px;height:30px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--ink);flex-shrink:0}
+.tb-name{color:#fff;font-weight:600;font-size:14px}
+.tb-date{font-size:10.5px;color:rgba(255,255,255,.4)}
+/* GREETING */
+.greeting{margin:12px 14px 0;background:var(--ink);border-radius:var(--r16);padding:16px 18px;color:#fff}
+.greet-sub{font-size:10.5px;color:rgba(255,255,255,.4);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.greet-name{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.greet-name span{color:var(--gold)}
+.greet-tag{display:inline-flex;align-items:center;gap:5px;margin-top:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 11px;font-size:11px;color:rgba(255,255,255,.5)}
+.greet-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+/* SECTION */
+.section{margin:12px 14px 0;background:var(--card);border-radius:var(--r16);border:1px solid var(--line);box-shadow:var(--sh);overflow:hidden}
+.sec-hdr{padding:12px 15px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+.sec-num{width:22px;height:22px;background:var(--ink);color:var(--gold);border-radius:6px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-title{font-size:13px;font-weight:700;flex:1}
+.sec-min{font-size:10px;color:var(--muted);background:var(--paper);border-radius:20px;padding:2px 8px}
+.sec-body{padding:13px}
+/* ACTIVITY LIST */
+.act-list{display:flex;flex-direction:column;gap:6px}
+.act-item{border:1.5px solid var(--line);border-radius:var(--r12);overflow:hidden;transition:border-color .15s}
+.act-item.on{border-color:var(--gold-d)}
+.act-btn{display:flex;align-items:center;gap:10px;padding:12px 13px;background:transparent;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;width:100%;text-align:left;border:none;-webkit-appearance:none}
+.act-item.on .act-btn{background:var(--gold-l)}
+.act-icon{font-size:18px;flex-shrink:0;width:26px;text-align:center}
+.act-label{flex:1;line-height:1.3}
+.act-check{width:20px;height:20px;border-radius:50%;background:var(--gold-d);display:none;align-items:center;justify-content:center;font-size:11px;color:var(--ink);flex-shrink:0;font-weight:700}
+.act-item.on .act-check{display:flex}
+.act-detail{padding:0 13px 12px;display:none;background:var(--gold-l)}
+.act-item.on .act-detail{display:block}
+.det-lbl{font-size:10px;font-weight:700;color:var(--gold-d);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px;margin-top:2px}
+.det-inp{width:100%;padding:9px 11px;border:1.5px solid rgba(193,158,0,.3);border-radius:var(--r8);font-family:inherit;font-size:13px;background:#fff;outline:none;color:var(--ink);margin-bottom:6px}
+.det-inp:focus{border-color:var(--gold-d)}
+.det-inp:last-child{margin-bottom:0}
+.add-row-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1.5px dashed rgba(193,158,0,.4);border-radius:var(--r8);background:transparent;font-family:inherit;font-size:12px;color:var(--gold-d);cursor:pointer;font-weight:600;margin-top:4px}
+/* NUMBER INPUTS */
+.num-block{margin-bottom:14px}
+.num-block:last-child{margin-bottom:0}
+.num-blk-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.num-blk-title::after{content:'';flex:1;height:1px;background:var(--line)}
+.num-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.num-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px;display:block}
+.num-inp{width:100%;padding:13px 10px;border:1.5px solid var(--line);border-radius:var(--r12);font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--ink);background:var(--paper);outline:none;text-align:center;-webkit-appearance:none}
+.num-inp:focus{border-color:var(--ink);background:#fff;box-shadow:0 0 0 3px rgba(15,15,15,.06)}
+.num-inp.sar{font-size:16px}
+.num-unit{font-size:10px;color:var(--muted);text-align:center;margin-top:3px}
+/* TOP 3 DEALS */
+.deal-row{padding:12px 0;border-bottom:1px solid var(--line)}
+.deal-row:last-child{border-bottom:none;padding-bottom:0}
+.deal-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.deal-idx{width:22px;height:22px;background:var(--paper);border:1px solid var(--line);border-radius:6px;font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.deal-rfq-inp{flex:1;padding:9px 11px;border:1.5px solid var(--line);border-radius:var(--r8);font-family:inherit;font-size:13px;font-weight:700;color:var(--blue);background:var(--paper);outline:none}
+.deal-rfq-inp:focus{border-color:var(--blue);background:#fff}
+.deal-pri{padding:8px 10px;border:1.5px solid var(--line);border-radius:var(--r8);font-family:inherit;font-size:11.5px;background:var(--paper);outline:none;color:var(--ink);cursor:pointer;flex-shrink:0}
+.deal-val-inp{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:var(--r8);font-family:'DM Mono',monospace;font-size:13px;background:var(--paper);outline:none;color:var(--ink)}
+.deal-val-inp:focus{border-color:var(--ink);background:#fff}
+/* TODAY FOCUS */
+.focus-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.focus-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:14px 8px;border:1.5px solid var(--line);border-radius:var(--r12);background:transparent;font-family:inherit;cursor:pointer;transition:all .15s;-webkit-appearance:none}
+.focus-btn:active{transform:scale(.97)}
+.focus-btn.on{background:var(--ink);border-color:var(--ink)}
+.focus-icon{font-size:22px}
+.focus-label{font-size:11.5px;font-weight:600;color:var(--muted);text-align:center;line-height:1.3}
+.focus-btn.on .focus-label{color:var(--gold)}
+.targets-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+/* SUPPORT */
+.support-list{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.sup-row{display:flex;align-items:center;gap:10px;padding:12px 13px;border:1.5px solid var(--line);border-radius:var(--r12);cursor:pointer;transition:all .15s;background:transparent;-webkit-appearance:none;width:100%;font-family:inherit;text-align:left;border-width:1.5px;border-style:solid}
+.sup-row:active{transform:scale(.98)}
+.sup-row.on{border-color:var(--ink);background:var(--ink)}
+.sup-icon{font-size:17px;flex-shrink:0}
+.sup-label{flex:1;font-size:13px;font-weight:500;color:var(--ink)}
+.sup-row.on .sup-label{color:#fff}
+.sup-badge{font-size:10px;color:var(--muted);background:var(--paper);border-radius:10px;padding:2px 7px;flex-shrink:0}
+.sup-row.on .sup-badge{background:rgba(255,255,255,.15);color:rgba(255,255,255,.5)}
+.sup-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:transparent}
+.sup-row.on .sup-check{background:var(--gold);border-color:var(--gold-d);color:var(--ink)}
+/* NOTE */
+.note-inp{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:var(--r12);font-family:inherit;font-size:13px;line-height:1.55;background:var(--paper);outline:none;color:var(--ink);resize:none}
+.note-inp:focus{border-color:var(--ink);background:#fff}
+/* SUBMIT */
+.submit-wrap{margin:16px 14px 0}
+.submit-btn{width:100%;padding:16px;background:var(--ink);color:var(--gold);border:none;border-radius:var(--r16);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.2px;-webkit-appearance:none}
+.submit-btn:active{transform:scale(.98);opacity:.9}
+/* SUCCESS */
+.success-screen{display:none;position:fixed;inset:0;background:var(--ink);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.success-screen.show{display:flex;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.success-icon{font-size:60px;margin-bottom:16px}
+.success-title{font-size:24px;font-weight:700;color:var(--gold);margin-bottom:8px;letter-spacing:-.5px}
+.success-sub{font-size:14px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:24px}
+.success-time{font-size:11px;color:rgba(255,255,255,.2);font-family:'DM Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">BH</div>
+    <div>
+      <div class="tb-name">Daily Report</div>
+      <div class="tb-date" id="tb-date">—</div>
+    </div>
+  </div>
+</div>
+
+<div class="greeting">
+  <div class="greet-sub">Good morning</div>
+  <div class="greet-name"><span id="rep-display">Hassan</span> 👋</div>
+  <div class="greet-tag">
+    <div class="greet-dot"></div>
+    Fill before 8:45 AM &nbsp;·&nbsp; ~3 minutes
+  </div>
+</div>
+
+<!-- §1 YESTERDAY -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-num">1</div>
+    <div class="sec-title">What did you do yesterday?</div>
+    <div class="sec-min">~1 min</div>
+  </div>
+  <div class="sec-body">
+    <div class="act-list" id="yest-list"></div>
+  </div>
+</div>
+
+<!-- §2 NUMBERS -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-num">2</div>
+    <div class="sec-title">Yesterday's numbers</div>
+    <div class="sec-min">~30 sec</div>
+  </div>
+  <div class="sec-body">
+    <div class="num-block">
+      <div class="num-blk-title">📋 RFQs</div>
+      <div class="num-row">
+        <div>
+          <span class="num-label">Count</span>
+          <input class="num-inp" id="rfq-count" type="text" inputmode="numeric" placeholder="0">
+          <div class="num-unit">submitted</div>
+        </div>
+        <div>
+          <span class="num-label">Value (SAR)</span>
+          <input class="num-inp sar" id="rfq-value" type="text" inputmode="numeric" placeholder="0">
+          <div class="num-unit">total</div>
+        </div>
+      </div>
+    </div>
+    <div class="num-block">
+      <div class="num-blk-title">🛒 Orders</div>
+      <div class="num-row">
+        <div>
+          <span class="num-label">Count</span>
+          <input class="num-inp" id="ord-count" type="text" inputmode="numeric" placeholder="0">
+          <div class="num-unit">closed</div>
+        </div>
+        <div>
+          <span class="num-label">Value (SAR)</span>
+          <input class="num-inp sar" id="ord-value" type="text" inputmode="numeric" placeholder="0">
+          <div class="num-unit">total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- §3 TOP 3 DEALS -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-num">3</div>
+    <div class="sec-title">Top 3 Active Deals</div>
+    <div class="sec-min">~45 sec</div>
+  </div>
+  <div class="sec-body" id="deals-body"></div>
+</div>
+
+<!-- §4 TODAY'S PLAN -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-num">4</div>
+    <div class="sec-title">Today's main focus</div>
+    <div class="sec-min">~30 sec</div>
+  </div>
+  <div class="sec-body">
+    <div class="focus-grid" id="focus-grid"></div>
+    <div class="targets-row">
+      <div>
+        <span class="num-label">RFQs target today</span>
+        <input class="num-inp" id="target-rfq" type="text" inputmode="numeric" placeholder="0">
+        <div class="num-unit">to submit</div>
+      </div>
+      <div>
+        <span class="num-label">Visits planned</span>
+        <input class="num-inp" id="target-visits" type="text" inputmode="numeric" placeholder="0">
+        <div class="num-unit">clients</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- §5 SUPPORT -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-num">5</div>
+    <div class="sec-title">What do you need from Mohamed?</div>
+    <div class="sec-min">~20 sec</div>
+  </div>
+  <div class="sec-body">
+    <div class="support-list" id="support-list"></div>
+    <textarea class="note-inp" id="focus-note" rows="2" placeholder="Add details if needed... (optional)"></textarea>
+  </div>
+</div>
+
+<div class="submit-wrap">
+  <button class="submit-btn" onclick="submitReport()">Submit Report &nbsp;→</button>
+</div>
+
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">Report Sent!</div>
+  <div class="success-sub">Mohamed can see your numbers now.<br>See you at the 9:00 AM meeting.</div>
+  <div class="success-time" id="success-time">—</div>
+</div>
+
+<script>
+/* ════ CONFIG ════ */
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8R-M0rrl3KyQVpMu2m3nRH-Hb6DbGv7IgM6XvXJipOxQyGfiDnsqSXqvk5A6rIU9p/exec';
+var REP_NAME  = 'Hassan'; // Change to 'Abdulrazak' for the other file
+document.getElementById('rep-display').textContent = REP_NAME;
+
+/* ════ STATIC DATA ════ */
+var YESTERDAY_ACTS = [
+  {k:'close_sales', icon:'✅', label:'Close Sales Deals',         hasDetail:false},
+  {k:'new_visit',   icon:'🏢', label:'New Company Visit',          hasDetail:true,  lbl:'Companies visited',   ph:'Company name...', max:5},
+  {k:'site_visit',  icon:'📍', label:'Site Visit',                 hasDetail:true,  lbl:'Sites / Zones',       ph:'Site name / Zone...', max:5},
+  {k:'followup',    icon:'📞', label:'Follow-up Calls',            hasDetail:false},
+  {k:'collection',  icon:'💰', label:'Collections',                hasDetail:false},
+  {k:'delivery',    icon:'🚛', label:'Delivery Sync',              hasDetail:false},
+  {k:'training',    icon:'💻', label:'System Training',            hasDetail:true,  lbl:'Client + System',     ph:'Client — System / Product trained on...', max:3},
+  {k:'meeting',     icon:'🤝', label:'Existing Customer Meeting',  hasDetail:true,  lbl:'Clients met',         ph:'Client name...', max:5},
+];
+
+var PRIORITIES = ['🔴 Critical / Re-order','🟡 Negotiation','🟢 New Lead','⚪ Price Check Only'];
+
+var TODAY_FOCUS = [
+  {k:'closing',    icon:'🤝', label:'Closing a Deal'},
+  {k:'visits',     icon:'🏢', label:'New Visits'},
+  {k:'meeting',    icon:'📅', label:'Client Meeting'},
+  {k:'collection', icon:'💰', label:'Collections'},
+  {k:'followup',   icon:'📞', label:'Follow-up Calls'},
+  {k:'delivery',   icon:'🚛', label:'Delivery Sync'},
+];
+
+var SUPPORT_ITEMS = [
+  {k:'discount',   icon:'💸', label:'Special Discount',    badge:'High Impact'},
+  {k:'pricing',    icon:'💰', label:'Pricing Decision',     badge:'High Impact'},
+  {k:'supplier',   icon:'🏭', label:'Supplier Issue',       badge:'Urgent'},
+  {k:'delivery',   icon:'🚛', label:'Delivery Problem',     badge:'Urgent'},
+  {k:'extension',  icon:'📅', label:'Payment Extension',    badge:'Client'},
+  {k:'tech',       icon:'🔧', label:'Technical Support',    badge:'Support'},
+  {k:'nothing',    icon:'✅', label:'Nothing today',         badge:''},
+];
+
+/* ════ STATE ════ */
+var yestSel  = {};
+var yestRows = {}; // k -> ['row1','row2',...]
+var focusSel = [];
+var suppSel  = {};
+
+YESTERDAY_ACTS.forEach(function(a){ yestSel[a.k]=false; yestRows[a.k]=['']; });
+TODAY_FOCUS.forEach(function(f){ /* no init needed */ });
+SUPPORT_ITEMS.forEach(function(s){ suppSel[s.k]=false; });
+
+/* ════ DATE ════ */
+var NOW = new Date();
+document.getElementById('tb-date').textContent =
+  NOW.toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short'});
+
+/* ════ NUMBER FORMAT ════ */
+function attachFmt(el){
+  el.addEventListener('focus', function(){ this.value = this.value.replace(/,/g,''); });
+  el.addEventListener('blur', function(){
+    var n = parseFloat(this.value.replace(/,/g,''));
+    if(!isNaN(n) && this.value !== '') this.value = n.toLocaleString('en-US');
+  });
+}
+['rfq-count','rfq-value','ord-count','ord-value','target-rfq','target-visits'].forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) attachFmt(el);
+});
+function getRaw(id){
+  var el = document.getElementById(id);
+  return el ? parseFloat(el.value.replace(/,/g,''))||0 : 0;
+}
+
+/* ════ BUILD YESTERDAY LIST ════ */
+(function(){
+  var list = document.getElementById('yest-list');
+  YESTERDAY_ACTS.forEach(function(a){
+    var item = document.createElement('div');
+    item.className = 'act-item';
+    item.id = 'yi-' + a.k;
+
+    var btnDiv = document.createElement('button');
+    btnDiv.className = 'act-btn';
+    btnDiv.setAttribute('data-k', a.k);
+    btnDiv.setAttribute('onclick', 'togYest("' + a.k + '")');
+    btnDiv.innerHTML =
+      '<span class="act-icon">' + a.icon + '</span>' +
+      '<span class="act-label">' + a.label + '</span>' +
+      '<span class="act-check">✓</span>';
+
+    item.appendChild(btnDiv);
+
+    if(a.hasDetail){
+      var det = document.createElement('div');
+      det.className = 'act-detail';
+      det.id = 'yd-' + a.k;
+
+      var lbl = document.createElement('div');
+      lbl.className = 'det-lbl';
+      lbl.textContent = a.lbl;
+      det.appendChild(lbl);
+
+      var rowsCont = document.createElement('div');
+      rowsCont.id = 'yr-' + a.k;
+      var firstInp = document.createElement('input');
+      firstInp.type = 'text';
+      firstInp.className = 'det-inp';
+      firstInp.placeholder = a.ph;
+      firstInp.setAttribute('data-k', a.k);
+      firstInp.setAttribute('data-idx', '0');
+      firstInp.oninput = function(){ yestRows[this.getAttribute('data-k')][+this.getAttribute('data-idx')] = this.value; };
+      rowsCont.appendChild(firstInp);
+      det.appendChild(rowsCont);
+
+      if((a.max||1) > 1){
+        var addBtn = document.createElement('button');
+        addBtn.className = 'add-row-btn';
+        addBtn.textContent = '+ Add';
+        addBtn.setAttribute('data-k', a.k);
+        addBtn.setAttribute('data-ph', a.ph);
+        addBtn.setAttribute('data-max', a.max||3);
+        addBtn.onclick = function(){
+          var k = this.getAttribute('data-k');
+          var ph = this.getAttribute('data-ph');
+          var mx = +this.getAttribute('data-max');
+          addYestRow(k, ph, mx);
+        };
+        det.appendChild(addBtn);
+      }
+      item.appendChild(det);
+    }
+    list.appendChild(item);
+  });
+})();
+
+function togYest(k){
+  yestSel[k] = !yestSel[k];
+  document.getElementById('yi-'+k).className = yestSel[k] ? 'act-item on' : 'act-item';
+}
+
+function addYestRow(k, ph, mx){
+  var rows = yestRows[k];
+  if(rows.length >= mx) return;
+  var idx = rows.length;
+  rows.push('');
+  var cont = document.getElementById('yr-'+k);
+  var inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'det-inp';
+  inp.placeholder = ph;
+  inp.setAttribute('data-k', k);
+  inp.setAttribute('data-idx', String(idx));
+  inp.oninput = function(){ yestRows[this.getAttribute('data-k')][+this.getAttribute('data-idx')] = this.value; };
+  cont.appendChild(inp);
+}
+
+/* ════ BUILD TOP 3 DEALS ════ */
+(function(){
+  var body = document.getElementById('deals-body');
+  for(var i = 1; i <= 3; i++){
+    var row = document.createElement('div');
+    row.className = 'deal-row';
+
+    /* top line: index + RFQ input + priority */
+    var top = document.createElement('div');
+    top.className = 'deal-top';
+
+    var idx = document.createElement('div');
+    idx.className = 'deal-idx';
+    idx.textContent = String(i);
+    top.appendChild(idx);
+
+    var rfqInp = document.createElement('input');
+    rfqInp.type = 'text';
+    rfqInp.className = 'deal-rfq-inp';
+    rfqInp.id = 'deal-rfq-' + i;
+    rfqInp.placeholder = 'RFQ # (e.g. RFQ-1025)';
+    top.appendChild(rfqInp);
+
+    var priSel = document.createElement('select');
+    priSel.className = 'deal-pri';
+    priSel.id = 'deal-pri-' + i;
+    PRIORITIES.forEach(function(p){
+      var opt = document.createElement('option');
+      opt.textContent = p;
+      priSel.appendChild(opt);
+    });
+    top.appendChild(priSel);
+    row.appendChild(top);
+
+    /* value input */
+    var valInp = document.createElement('input');
+    valInp.type = 'text';
+    valInp.className = 'deal-val-inp';
+    valInp.id = 'deal-val-' + i;
+    valInp.placeholder = 'Value SAR (optional)';
+    valInp.inputMode = 'numeric';
+    attachFmt(valInp);
+    row.appendChild(valInp);
+
+    body.appendChild(row);
+  }
+})();
+
+/* ════ BUILD TODAY FOCUS ════ */
+(function(){
+  var grid = document.getElementById('focus-grid');
+  TODAY_FOCUS.forEach(function(f){
+    var btn = document.createElement('button');
+    btn.className = 'focus-btn';
+    btn.setAttribute('data-k', f.k);
+    btn.innerHTML = '<span class="focus-icon">' + f.icon + '</span><span class="focus-label">' + f.label + '</span>';
+    btn.onclick = function(){
+      var k = this.getAttribute('data-k');
+      var idx = focusSel.indexOf(k);
+      if(idx >= 0){ focusSel.splice(idx,1); this.classList.remove('on'); }
+      else { focusSel.push(k); this.classList.add('on'); }
+    };
+    grid.appendChild(btn);
+  });
+})();
+
+/* ════ BUILD SUPPORT LIST ════ */
+(function(){
+  var list = document.getElementById('support-list');
+  SUPPORT_ITEMS.forEach(function(s){
+    var row = document.createElement('button');
+    row.className = 'sup-row';
+    row.id = 'si-' + s.k;
+    row.innerHTML =
+      '<span class="sup-icon">' + s.icon + '</span>' +
+      '<span class="sup-label">' + s.label + '</span>' +
+      (s.badge ? '<span class="sup-badge">' + s.badge + '</span>' : '') +
+      '<span class="sup-check">✓</span>';
+    row.onclick = function(){
+      var k = this.id.replace('si-','');
+      suppSel[k] = !suppSel[k];
+      this.className = suppSel[k] ? 'sup-row on' : 'sup-row';
+    };
+    list.appendChild(row);
+  });
+})();
+
+/* ════ SUBMIT ════ */
+function submitReport(){
+  /* Yesterday */
+  var yActs = [];
+  YESTERDAY_ACTS.forEach(function(a){
+    if(!yestSel[a.k]) return;
+    var rows = yestRows[a.k].filter(function(r){ return r.trim(); });
+    yActs.push(a.label + (rows.length ? ' → ' + rows.join(', ') : ''));
+  });
+
+  /* Top 3 deals */
+  var deals = [];
+  for(var i=1;i<=3;i++){
+    var rfq = document.getElementById('deal-rfq-'+i).value.trim();
+    var val = document.getElementById('deal-val-'+i).value.trim();
+    var pri = document.getElementById('deal-pri-'+i).value;
+    if(rfq || val) deals.push(pri + ' | ' + rfq + (val ? ' | ' + val + ' SAR' : ''));
+  }
+
+  /* Focus */
+  var focusLabels = focusSel.map(function(k){
+    var f = TODAY_FOCUS.find(function(x){ return x.k===k; });
+    return f ? f.label : k;
+  });
+
+  /* Support */
+  var suppItems = SUPPORT_ITEMS.filter(function(s){ return suppSel[s.k]; }).map(function(s){ return s.label; });
+
+  var payload = {
+    rep:             REP_NAME,
+    date:            NOW.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}),
+    timestamp:       NOW.toISOString(),
+    yesterday_acts:  yActs.join(' || '),
+    rfq_count:       getRaw('rfq-count'),
+    rfq_value:       getRaw('rfq-value'),
+    ord_count:       getRaw('ord-count'),
+    ord_value:       getRaw('ord-value'),
+    conversion:      getRaw('rfq-count')>0 ? Math.round(getRaw('ord-count')/getRaw('rfq-count')*100)+'%' : '—',
+    top_deals:       deals.join(' || '),
+    focus_today:     focusLabels.join(' + ') || 'Not specified',
+    target_rfq:      getRaw('target-rfq'),
+    target_visits:   getRaw('target-visits'),
+    support_needed:  suppItems.join(' | '),
+    support_note:    document.getElementById('focus-note').value,
+  };
+
+  /* Show success */
+  document.getElementById('success-screen').classList.add('show');
+  document.getElementById('success-time').textContent =
+    'Submitted at ' + NOW.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+
+  /* Send to Google Sheets */
+  if(SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
+    fetch(SHEET_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    }).catch(function(e){ console.log('Sheet error:',e); });
+  } else {
+    console.log('Report (demo):', payload);
+    console.table(payload);
+  }
+}
+</script>
+</body>
+</html>
