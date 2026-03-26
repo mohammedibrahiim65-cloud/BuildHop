@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BuildHop — Daily Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F0F0F;--paper:#F5F4F1;--card:#FFFFFF;--line:#E8E7E3;
+  --muted:#9A9896;--gold:#F5C842;--gold-d:#C9A000;--gold-l:#FFFBDC;
+  --green:#166534;--green-l:#F0FDF4;--green2:#86EFAC;
+  --red:#991B1B;--red-l:#FFF1F2;--red2:#FCA5A5;
+  --blue:#1E3A8A;--blue-l:#EFF6FF;--blue2:#93C5FD;
+  --amber:#92400E;--amber-l:#FFFBEB;--amber2:#FCD34D;
+  --pu:#4C1D95;--pu-l:#F5F3FF;--pu2:#C4B5FD;
+  --r8:8px;--r12:12px;--r16:16px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;padding-bottom:60px}
+
+/* TOP BAR */
+.topbar{background:var(--ink);padding:15px 16px 14px;position:sticky;top:0;z-index:20}
+.tb-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tb-brand{display:flex;align-items:center;gap:9px}
+.tb-logo{width:30px;height:30px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--ink);flex-shrink:0}
+.tb-name{color:#fff;font-weight:700;font-size:14px}
+.tb-date{font-size:10.5px;color:rgba(255,255,255,.4)}
+/* progress bar */
+.progress-bar{height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .4s ease;width:0%}
+
+/* SECTION */
+.section{margin:12px 14px 0;background:var(--card);border-radius:var(--r16);border:1px solid var(--line);box-shadow:var(--sh);overflow:hidden}
+.sec-hdr{display:flex;align-items:center;gap:10px;padding:13px 15px 11px;border-bottom:1px solid var(--line)}
+.sec-stripe{width:4px;border-radius:3px;align-self:stretch;min-height:24px;flex-shrink:0}
+.sec-ic{font-size:16px}
+.sec-info{flex:1}
+.sec-title{font-size:13px;font-weight:700}
+.sec-obj{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.sec-badge{font-size:10px;color:var(--muted);background:var(--paper);border-radius:20px;padding:2px 9px;flex-shrink:0;border:1px solid var(--line)}
+.sec-body{padding:13px}
+
+/* ── ACTIVITY ITEMS ── */
+.act-item{border:1.5px solid var(--line);border-radius:var(--r12);margin-bottom:7px;overflow:hidden;transition:border-color .15s}
+.act-item:last-child{margin-bottom:0}
+.act-item.on{border-color:var(--gold-d)}
+.act-main{display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;background:transparent;width:100%;border:none;font-family:inherit;text-align:left;-webkit-appearance:none}
+.act-item.on .act-main{background:var(--gold-l)}
+.act-ic{font-size:17px;flex-shrink:0;width:24px;text-align:center}
+.act-lbl{flex:1;font-size:13px;font-weight:500;color:var(--ink)}
+.act-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex-shrink:0;transition:all .15s}
+.act-item.on .act-check{background:var(--gold-d);border-color:var(--gold-d);color:var(--ink)}
+
+/* number input inline */
+.act-num-row{display:flex;align-items:center;gap:8px;padding:0 13px 11px;background:var(--gold-l)}
+.act-num-lbl{font-size:10.5px;font-weight:600;color:var(--gold-d)}
+.act-num{width:70px;padding:6px 8px;border:1.5px solid rgba(193,158,0,.4);border-radius:var(--r8);font-family:'DM Mono',monospace;font-size:16px;font-weight:600;text-align:center;background:#fff;outline:none;color:var(--ink);-webkit-appearance:none}
+.act-num:focus{border-color:var(--gold-d)}
+.act-num-unit{font-size:11px;color:var(--gold-d);font-weight:600}
+/* location sub-field */
+.act-loc-row{padding:0 13px 11px;background:var(--gold-l)}
+.act-loc{width:100%;padding:8px 11px;border:1.5px solid rgba(193,158,0,.4);border-radius:var(--r8);font-family:inherit;font-size:13px;background:#fff;outline:none;color:var(--ink)}
+.act-loc:focus{border-color:var(--gold-d)}
+/* yes/no toggle */
+.yn-row{display:flex;gap:7px;padding:0 13px 11px;background:var(--gold-l)}
+.yn-btn{flex:1;padding:8px;border:1.5px solid rgba(193,158,0,.3);border-radius:var(--r8);font-family:inherit;font-size:12.5px;font-weight:600;background:#fff;cursor:pointer;color:var(--muted);transition:all .13s;text-align:center;-webkit-appearance:none}
+.yn-btn.sel-yes{background:var(--green-l);border-color:var(--green2);color:var(--green)}
+.yn-btn.sel-no{background:var(--red-l);border-color:var(--red2);color:var(--red)}
+/* optional text */
+.act-opt{width:100%;padding:8px 11px;border:1.5px solid rgba(193,158,0,.4);border-radius:var(--r8);font-family:inherit;font-size:13px;background:#fff;outline:none;color:var(--ink)}
+.act-opt:focus{border-color:var(--gold-d)}
+
+/* ── ISSUE / SUPPORT ITEMS ── */
+.issue-item{border:1.5px solid var(--line);border-radius:var(--r12);margin-bottom:7px;overflow:hidden;transition:all .15s}
+.issue-item:last-child{margin-bottom:0}
+.issue-item.on{border-color:var(--ink)}
+.issue-main{display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer;background:transparent;width:100%;border:none;font-family:inherit;text-align:left;-webkit-appearance:none;transition:background .15s}
+.issue-item.on .issue-main{background:var(--ink)}
+.issue-ic{font-size:17px;flex-shrink:0}
+.issue-lbl{flex:1;font-size:13px;font-weight:500;color:var(--ink)}
+.issue-item.on .issue-lbl{color:#fff}
+.issue-badge{font-size:10px;color:var(--muted);background:var(--paper);border-radius:10px;padding:2px 8px;flex-shrink:0;border:1px solid var(--line)}
+.issue-item.on .issue-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.5);border-color:transparent}
+.issue-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;flex-shrink:0}
+.issue-item.on .issue-check{background:var(--gold);border-color:var(--gold-d);color:var(--ink)}
+/* sub input */
+.issue-sub{padding:0 13px 12px;background:var(--ink);display:none}
+.issue-item.on .issue-sub{display:block}
+.issue-sub-inp{width:100%;padding:9px 11px;border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r8);font-family:inherit;font-size:13px;background:rgba(255,255,255,.08);outline:none;color:#fff}
+.issue-sub-inp::placeholder{color:rgba(255,255,255,.35)}
+.issue-sub-inp:focus{border-color:rgba(255,255,255,.4)}
+.issue-sub-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px}
+
+/* ── FOCUS BUTTONS ── */
+.focus-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.focus-btn{display:flex;align-items:center;gap:9px;padding:12px 13px;border:1.5px solid var(--line);border-radius:var(--r12);background:transparent;font-family:inherit;cursor:pointer;-webkit-appearance:none;transition:all .15s}
+.focus-btn:active{transform:scale(.97)}
+.focus-btn.on{background:var(--ink);border-color:var(--ink)}
+.focus-ic{font-size:18px;flex-shrink:0}
+.focus-lbl{font-size:12.5px;font-weight:500;color:var(--muted)}
+.focus-btn.on .focus-lbl{color:var(--gold)}
+.focus-other-inp{width:100%;margin-top:8px;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r12);font-family:inherit;font-size:13px;background:var(--paper);outline:none;color:var(--ink);display:none}
+.focus-other-inp.show{display:block}
+.focus-other-inp:focus{border-color:var(--ink);background:#fff}
+
+/* SUBMIT */
+.submit-wrap{margin:16px 14px 0}
+.submit-btn{width:100%;padding:16px;background:var(--ink);color:var(--gold);border:none;border-radius:var(--r16);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;-webkit-appearance:none;transition:all .15s}
+.submit-btn:active{transform:scale(.98);opacity:.9}
+
+/* SUCCESS */
+.success-screen{display:none;position:fixed;inset:0;background:var(--ink);z-index:100;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.success-screen.show{display:flex;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.success-icon{font-size:60px;margin-bottom:16px}
+.success-title{font-size:24px;font-weight:700;color:var(--gold);margin-bottom:8px;letter-spacing:-.5px}
+.success-sub{font-size:14px;color:rgba(255,255,255,.45);line-height:1.65;margin-bottom:6px}
+.success-time{font-size:11px;color:rgba(255,255,255,.2);font-family:'DM Mono',monospace;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-row1">
+    <div class="tb-brand">
+      <div class="tb-logo">BH</div>
+      <div>
+        <div class="tb-name">Daily Report — <span id="rep-name">Hassan</span></div>
+        <div class="tb-date" id="tb-date">—</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4)" id="progress-txt">0 / 4</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<!-- §1 YESTERDAY ACTIVITY -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-stripe" style="background:var(--gold-d)"></div>
+    <div class="sec-ic">🟡</div>
+    <div class="sec-info">
+      <div class="sec-title">Yesterday Activity</div>
+      <div class="sec-obj">Measure real field activity — numbers only, no writing</div>
+    </div>
+    <div class="sec-badge">Section 1</div>
+  </div>
+  <div class="sec-body" id="act-body"></div>
+</div>
+
+<!-- §2 ISSUES FACING -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-stripe" style="background:var(--red)"></div>
+    <div class="sec-ic">🔴</div>
+    <div class="sec-info">
+      <div class="sec-title">Issues Currently Facing</div>
+      <div class="sec-obj">Identify real blockers affecting sales & closing</div>
+    </div>
+    <div class="sec-badge">Section 2</div>
+  </div>
+  <div class="sec-body" id="issue-body"></div>
+</div>
+
+<!-- §3 TODAY FOCUS -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-stripe" style="background:var(--pu)"></div>
+    <div class="sec-ic">🟣</div>
+    <div class="sec-info">
+      <div class="sec-title">Today Priority Focus</div>
+      <div class="sec-obj">Understand direction of effort — flexible, not fixed</div>
+    </div>
+    <div class="sec-badge">Section 3</div>
+  </div>
+  <div class="sec-body">
+    <div class="focus-grid" id="focus-grid"></div>
+    <input class="focus-other-inp" id="focus-other" type="text" placeholder="Specify other focus...">
+  </div>
+</div>
+
+<!-- §4 SUPPORT NEEDED -->
+<div class="section">
+  <div class="sec-hdr">
+    <div class="sec-stripe" style="background:var(--blue)"></div>
+    <div class="sec-ic">🔵</div>
+    <div class="sec-info">
+      <div class="sec-title">Support Needed</div>
+      <div class="sec-obj">Enable fast decision-making & remove blockers — most important for Mohamed</div>
+    </div>
+    <div class="sec-badge">Section 4</div>
+  </div>
+  <div class="sec-body" id="support-body"></div>
+</div>
+
+<div class="submit-wrap">
+  <button class="submit-btn" onclick="submitReport()">Submit Daily Report →</button>
+</div>
+
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">Report Submitted!</div>
+  <div class="success-sub">Mohamed can see your report now.<br>See you at the 9:00 AM meeting.</div>
+  <div class="success-time" id="success-time">—</div>
+</div>
+
+<script>
+/* ════ CONFIG ════ */
+var SHEET_URL = 'https://script.google.com/macros/s/AKfycbw8R-M0rrl3KyQVpMu2m3nRH-Hb6DbGv7IgM6XvXJipOxQyGfiDnsqSXqvk5A6rIU9p/exec';
+var REP_NAME  = 'Hassan'; // Change to 'Abdulrazak' for the other file
+
+document.getElementById('rep-name').textContent = REP_NAME;
+
+var NOW = new Date();
+document.getElementById('tb-date').textContent =
+  NOW.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long'});
+
+/* ════ SECTION 1 — ACTIVITIES ════ */
+var ACTS = [
+  {k:'new_visit',   ic:'🏢', lbl:'Visiting New Customers',             type:'number', unit:'visits'},
+  {k:'exist_visit', ic:'🤝', lbl:'Visiting Existing Customers / Meetings', type:'number', unit:'visits'},
+  {k:'site_visit',  ic:'📍', lbl:'Site Visits',                        type:'number+loc', unit:'sites', locPh:'Location / Zone (e.g. North, East...)'},
+  {k:'collection',  ic:'💰', lbl:'Collections',                         type:'yesno'},
+  {k:'delivery',    ic:'🚛', lbl:'Delivery Coordination',               type:'yesno'},
+  {k:'complaints',  ic:'🔧', lbl:'Resolving Customer Complaints',       type:'yesno'},
+  {k:'training',    ic:'💻', lbl:'System Training / Support',           type:'yesno'},
+  {k:'other_act',   ic:'📝', lbl:'Other',                               type:'text', ph:'Specify...'},
+];
+
+var actState = {}; // k -> {on, num, loc, yn, txt}
+ACTS.forEach(function(a){ actState[a.k]={on:false,num:0,loc:'',yn:'',txt:''}; });
+
+(function(){
+  var body = document.getElementById('act-body');
+  ACTS.forEach(function(a){
+    var item = document.createElement('div');
+    item.className = 'act-item'; item.id = 'ai-'+a.k;
+
+    /* main toggle button */
+    var btn = document.createElement('button');
+    btn.className = 'act-main';
+    btn.innerHTML = '<span class="act-ic">'+a.ic+'</span><span class="act-lbl">'+a.lbl+'</span><span class="act-check">✓</span>';
+    btn.onclick = function(){ togAct(a.k); };
+    item.appendChild(btn);
+
+    /* sub-fields */
+    if(a.type==='number' || a.type==='number+loc'){
+      var nr = document.createElement('div'); nr.className='act-num-row'; nr.id='an-'+a.k;
+      nr.innerHTML='<span class="act-num-lbl">Count</span>'+
+        '<input class="act-num" id="anum-'+a.k+'" type="number" min="0" placeholder="0" oninput="actState[\''+a.k+'\'].num=+this.value">'+
+        '<span class="act-num-unit">'+a.unit+'</span>';
+      item.appendChild(nr);
+      if(a.type==='number+loc'){
+        var lr=document.createElement('div'); lr.className='act-loc-row'; lr.id='al-'+a.k;
+        lr.innerHTML='<input class="act-loc" id="aloc-'+a.k+'" type="text" placeholder="'+a.locPh+'" oninput="actState[\''+a.k+'\'].loc=this.value">';
+        item.appendChild(lr);
+      }
+    } else if(a.type==='yesno'){
+      var yr=document.createElement('div'); yr.className='yn-row'; yr.id='ay-'+a.k;
+      yr.innerHTML=
+        '<button class="yn-btn" id="yn-yes-'+a.k+'" onclick="setYN(\''+a.k+'\',\'yes\')">✅ Yes</button>'+
+        '<button class="yn-btn" id="yn-no-'+a.k+'" onclick="setYN(\''+a.k+'\',\'no\')">❌ No</button>';
+      item.appendChild(yr);
+    } else if(a.type==='text'){
+      var tr2=document.createElement('div'); tr2.className='act-loc-row'; tr2.id='at-'+a.k;
+      tr2.innerHTML='<input class="act-opt" id="atxt-'+a.k+'" type="text" placeholder="'+(a.ph||'Optional...')+'" oninput="actState[\''+a.k+'\'].txt=this.value">';
+      item.appendChild(tr2);
+    }
+    body.appendChild(item);
+  });
+})();
+
+function togAct(k){
+  actState[k].on = !actState[k].on;
+  document.getElementById('ai-'+k).className = 'act-item'+(actState[k].on?' on':'');
+  updateProgress();
+}
+function setYN(k, val){
+  actState[k].yn = val;
+  document.getElementById('yn-yes-'+k).className='yn-btn'+(val==='yes'?' sel-yes':'');
+  document.getElementById('yn-no-'+k).className='yn-btn'+(val==='no'?' sel-no':'');
+}
+
+/* ════ SECTION 2 — ISSUES ════ */
+var ISSUES = [
+  {k:'price_high',    ic:'💰', lbl:'Price Too High',             badge:'High Impact', sub:'Quotation No', ph:'e.g. RFQ-1025'},
+  {k:'discount',      ic:'💸', lbl:'Special Discount Required',  badge:'High Impact', sub:'Quotation No', ph:'e.g. RFQ-1031'},
+  {k:'delivery_pb',   ic:'🚛', lbl:'Delivery Problem',           badge:'Urgent',      sub:'Sales Order No', ph:'e.g. SO-2201'},
+  {k:'quality',       ic:'⚠️', lbl:'Quality Issue',              badge:'Urgent',      sub:'Sales Order No', ph:'e.g. SO-2198'},
+  {k:'payment_terms', ic:'📅', lbl:'Payment Terms Issue',        badge:'Client',      sub:'Customer + Amount', ph:'Client name — Amount SAR'},
+  {k:'no_response',   ic:'📵', lbl:'Customer Not Responding',    badge:'',            sub:'', ph:''},
+  {k:'no_issues',     ic:'✅', lbl:'No Issues Today',            badge:'',            sub:'', ph:''},
+  {k:'other_issue',   ic:'📝', lbl:'Other',                      badge:'',            sub:'Details', ph:'Describe the issue...'},
+];
+var issueState = {};
+ISSUES.forEach(function(i){ issueState[i.k]={on:false,sub:''}; });
+
+(function(){
+  var body = document.getElementById('issue-body');
+  ISSUES.forEach(function(is){
+    var item = document.createElement('div');
+    item.className='issue-item'; item.id='ii-'+is.k;
+
+    var btn = document.createElement('button'); btn.className='issue-main';
+    btn.innerHTML='<span class="issue-ic">'+is.ic+'</span><span class="issue-lbl">'+is.lbl+'</span>'+
+      (is.badge?'<span class="issue-badge">'+is.badge+'</span>':'')+
+      '<span class="issue-check">✓</span>';
+    btn.onclick=function(){ togIssue(is.k); };
+    item.appendChild(btn);
+
+    if(is.sub){
+      var sub=document.createElement('div'); sub.className='issue-sub';
+      sub.innerHTML='<div class="issue-sub-lbl">'+is.sub+'</div>'+
+        '<input class="issue-sub-inp" id="isub-'+is.k+'" type="text" placeholder="'+is.ph+'" oninput="issueState[\''+is.k+'\'].sub=this.value" onclick="event.stopPropagation()">';
+      item.appendChild(sub);
+    }
+    body.appendChild(item);
+  });
+})();
+
+function togIssue(k){
+  issueState[k].on=!issueState[k].on;
+  document.getElementById('ii-'+k).className='issue-item'+(issueState[k].on?' on':'');
+  updateProgress();
+}
+
+/* ════ SECTION 3 — FOCUS ════ */
+var FOCUS = [
+  {k:'closing',   ic:'🤝', lbl:'Closing Deals'},
+  {k:'meetings',  ic:'👥', lbl:'Meeting Customers'},
+  {k:'calls',     ic:'📞', lbl:'Calls & Follow-ups'},
+  {k:'sites',     ic:'📍', lbl:'Site Visits'},
+  {k:'other_foc', ic:'✏️', lbl:'Other'},
+];
+var focusSel = [];
+
+(function(){
+  var grid = document.getElementById('focus-grid');
+  FOCUS.forEach(function(f){
+    var btn=document.createElement('button'); btn.className='focus-btn'; btn.setAttribute('data-k',f.k);
+    btn.innerHTML='<span class="focus-ic">'+f.ic+'</span><span class="focus-lbl">'+f.lbl+'</span>';
+    btn.onclick=function(){
+      var k=this.getAttribute('data-k');
+      var idx=focusSel.indexOf(k);
+      if(idx>=0){ focusSel.splice(idx,1); this.classList.remove('on'); }
+      else { focusSel.push(k); this.classList.add('on'); }
+      document.getElementById('focus-other').className='focus-other-inp'+(focusSel.indexOf('other_foc')>=0?' show':'');
+      updateProgress();
+    };
+    grid.appendChild(btn);
+  });
+})();
+
+/* ════ SECTION 4 — SUPPORT ════ */
+var SUPPORT = [
+  {k:'pricing_appr',  ic:'💰', lbl:'Pricing Approval',           badge:'🔥 High Priority', sub:'Quotation No', ph:'e.g. RFQ-1025'},
+  {k:'disc_appr',     ic:'💸', lbl:'Special Discount Approval',  badge:'🔥 High Priority', sub:'Quotation No', ph:'e.g. RFQ-1031'},
+  {k:'pay_supplier',  ic:'🏭', lbl:'Payment to Supplier',        badge:'Urgent',            sub:'Sales Order No', ph:'e.g. SO-2201'},
+  {k:'coll_support',  ic:'💳', lbl:'Collection Support',         badge:'Client',            sub:'Customer Name', ph:'Client name...'},
+  {k:'tech_support',  ic:'🔧', lbl:'Technical Support / Issue',  badge:'',                  sub:'', ph:''},
+  {k:'no_support',    ic:'✅', lbl:'No Support Needed',           badge:'',                  sub:'', ph:''},
+];
+var suppState = {};
+SUPPORT.forEach(function(s){ suppState[s.k]={on:false,sub:''}; });
+
+(function(){
+  var body = document.getElementById('support-body');
+  SUPPORT.forEach(function(s){
+    var item=document.createElement('div'); item.className='issue-item'; item.id='si-'+s.k;
+    var btn=document.createElement('button'); btn.className='issue-main';
+    btn.innerHTML='<span class="issue-ic">'+s.ic+'</span><span class="issue-lbl">'+s.lbl+'</span>'+
+      (s.badge?'<span class="issue-badge">'+s.badge+'</span>':'')+
+      '<span class="issue-check">✓</span>';
+    btn.onclick=function(){ togSupp(s.k); };
+    item.appendChild(btn);
+    if(s.sub){
+      var sub=document.createElement('div'); sub.className='issue-sub';
+      sub.innerHTML='<div class="issue-sub-lbl">'+s.sub+'</div>'+
+        '<input class="issue-sub-inp" id="ssub-'+s.k+'" type="text" placeholder="'+s.ph+'" oninput="suppState[\''+s.k+'\'].sub=this.value" onclick="event.stopPropagation()">';
+      item.appendChild(sub);
+    }
+    body.appendChild(item);
+  });
+})();
+
+function togSupp(k){
+  suppState[k].on=!suppState[k].on;
+  document.getElementById('si-'+k).className='issue-item'+(suppState[k].on?' on':'');
+  updateProgress();
+}
+
+/* ════ PROGRESS ════ */
+function updateProgress(){
+  var done=0;
+  if(ACTS.some(function(a){return actState[a.k].on;})) done++;
+  if(ISSUES.some(function(i){return issueState[i.k].on;})) done++;
+  if(focusSel.length>0) done++;
+  if(SUPPORT.some(function(s){return suppState[s.k].on;})) done++;
+  document.getElementById('progress-fill').style.width=(done/4*100)+'%';
+  document.getElementById('progress-txt').textContent=done+' / 4';
+}
+
+/* ════ SUBMIT ════ */
+function submitReport(){
+  /* Build activity summary */
+  var actParts=[];
+  ACTS.forEach(function(a){
+    if(!actState[a.k].on) return;
+    var s=a.lbl;
+    if(a.type==='number'||a.type==='number+loc') s+=' ('+actState[a.k].num+' '+a.unit+(actState[a.k].loc?' — '+actState[a.k].loc:'')+')';
+    else if(a.type==='yesno') s+=' → '+(actState[a.k].yn||'Yes');
+    else if(a.type==='text'&&actState[a.k].txt) s+=': '+actState[a.k].txt;
+    actParts.push(s);
+  });
+
+  /* Build issues */
+  var issParts=[];
+  ISSUES.forEach(function(i){
+    if(!issueState[i.k].on) return;
+    var s=i.lbl;
+    if(issueState[i.k].sub) s+=' ('+issueState[i.k].sub+')';
+    issParts.push(s);
+  });
+
+  /* Build focus */
+  var focParts=focusSel.map(function(k){
+    if(k==='other_foc') return 'Other: '+(document.getElementById('focus-other').value||'');
+    var f=FOCUS.find(function(x){return x.k===k;}); return f?f.lbl:k;
+  });
+
+  /* Build support */
+  var suppParts=[];
+  SUPPORT.forEach(function(s){
+    if(!suppState[s.k].on) return;
+    var t=s.lbl;
+    if(suppState[s.k].sub) t+=' ('+suppState[s.k].sub+')';
+    suppParts.push(t);
+  });
+
+  var payload={
+    action:          'daily',
+    rep:             REP_NAME,
+    date:            NOW.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}),
+    timestamp:       NOW.toISOString(),
+    yesterday_acts:  actParts.join(' || '),
+    issues_facing:   issParts.join(' || '),
+    focus_today:     focParts.join(' + ') || 'Not specified',
+    support_needed:  suppParts.join(' || '),
+    /* numbers for KPIs */
+    new_visits:      actState['new_visit'].num,
+    exist_visits:    actState['exist_visit'].num,
+    site_visits:     actState['site_visit'].num,
+  };
+
+  document.getElementById('success-screen').classList.add('show');
+  document.getElementById('success-time').textContent =
+    'Submitted at '+NOW.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+
+  if(SHEET_URL!=='YOUR_URL'){
+    fetch(SHEET_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .catch(function(e){console.log(e);});
+  } else { console.log('Demo report:',payload); }
+}
+</script>
+</body>
+</html>
